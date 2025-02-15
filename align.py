@@ -177,7 +177,7 @@ def linear_gap(x, y):
 
     num = dashstar.count('|')
     print("Matches: " + str(num))
-    print("Percent identity: " + str((num / (len(x_list) + len(y_list))*100)) + '%')
+    print("Percent identity: " + str((num / ((len(x_list) + len(y_list)) / 2)) * 100) + '%')
     print("Indels: number=" + str(indelquant)+ ", mean length=" + str(mean_length))
     print("Alignment length: " + str(len(final_x)))
     print("Score=" + str(alignment_score))
@@ -381,7 +381,7 @@ def affine_gap(x, y):
 
     num = dashstar.count('|')
     print("Matches:", num)
-    print("Percent identity:", str((num / (len(x_list) + len(y_list)) * 100)) + '%')
+    print("Percent identity:", str((num / ((len(x_list) + len(y_list)) / 2)) * 100) + '%')
     print("Indels: number =", str(indelquant) + ", mean length =", str(mean_length))
     print("Alignment length:", len(final_x))
     print("Score=" + str(best_score))
