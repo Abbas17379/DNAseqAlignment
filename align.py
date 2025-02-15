@@ -205,79 +205,123 @@ def linear_gap(x, y):
 
 
 def affine_gap(x, y):
-    matrix = [[0 for each in range(len(x) + 1)] for each in range(len(y) + 1)]
-    trace_matrix = [['' for each in range(len(x) + 1)] for each in range(len(y) + 1)]
+
+    Match_matrix = [[float(0) for each in range(len(x) + 1)] for each in range(
+        len(y) + 1)]
+    Insertion_matrix = [[float(0) for each in range(len(x) + 1)] for each in range(
+        len(y) + 1)]
+
+    Deletion_matrix = [[float(0) for each in range(len(x) + 1)] for each in
+                    range(len(y) + 1)]
+
+    T_match_matrix = [['' for each in range(len(x) + 1)] for each in
+                    range(len(y) + 1)]
+
+    T_insertion_matrix = [['' for each in range(len(x) + 1)] for each in
+                    range(len(y) + 1)]
+
+    T_deletion_matrix = [['' for each in range(len(x) + 1)] for each in
+                    range(len(y) + 1)]
 
     x_list = list(x)
     y_list = list(y)
 
+    m = len(x_list)
+    n = len(y_list)
+
+    Deletion_matrix[0][0] = low
+    Insertion_matrix[0][0] = low
+
+    for i in range(1, m + 1):
+        Match_matrix[0][i] = low
+        Deletion_matrix[0][i] = low
 
 
-   
+        Insertion_matrix[0][i] = max(Insertion_matrix[0][i-1] - 0.1,
+                                     Match_matrix[0][i-1] - 4)
+        if Insertion_matrix[0][i] == Insertion_matrix[0][i-1] - 0.1:
+            T_insertion_matrix[0][i] = "Insertion"
+        else:
+            T_insertion_matrix[0][i] = "Match"
 
-    matrix[0][1] = -4
-    matrix[1][0] = -4
-    for every in range(2, len(x) + 1):
-        matrix[0][every] += matrix[0][every-1] -0.1 #TWEAK TO -0.1
+    for i in range(1, n + 1):
+        Match_matrix[i][0] = low
+        Insertion_matrix[i][0] = low
 
+        Deletion_matrix[i][0] = max(Deletion_matrix[i-1][0] - 0.1,
+                                     Match_matrix[i-1][0] - 4)
+        if Deletion_matrix[i][0] == Deletion_matrix[i-1][0] - 0.1:
+            T_deletion_matrix[i][0] = "Deletion"
+        else:
+            T_deletion_matrix[i][0] = "Match"
 
-    for every in range(2,len(y) + 1):
-        matrix[every][0] += matrix[every-1][0] -0.1 #TWEAK TO -0.1
-    
-    for i in range(1, len(x) + 1):
-        trace_matrix[0][i] = 'Left'
-
-
-    for i in range(1, len(y) + 1):
-        trace_matrix[i][0] = 'Up'
-
-
-
-    isDiag = True
-    for row in range(1, len(y) + 1):
-        for column in range(1, len(x) + 1):
-            diag_cell = matrix[row - 1][column - 1] + myscoring[x_list[column - 1] + y_list[row - 1]]
-            if isDiag:
-                left_cell = matrix[row][column - 1] - 4
-                up_cell = matrix[row - 1][column] - 4
+    for row in range(1,n+1):
+        for col in range(1,m+1):
+            
+            #Recurrence for Match code below
+            Match = Match_matrix[row-1][col-1] + myscoring[x_list[col-1] + y_list[row-1]]
+            Insertion = Insertion_matrix[row-1][col-1] + myscoring[x_list[col-1] + y_list[row-1]]
+            Deletion = Deletion_matrix[row-1][col-1] + myscoring[x_list[col-1] + y_list[row-1]]
+            Match_matrix[row][col] = max(Match,Insertion,Deletion)
+            if Match_matrix[row][col] == Match:
+                T_match_matrix[row][col] = 'Match'
+            elif Match_matrix[row][col] == Deletion:
+                T_match_matrix[row][col] = "Deletion"
             else:
-                left_cell = matrix[row][column - 1] - 0.1
-                up_cell = matrix[row - 1][column] - 0.1
+                T_match_matrix[row][col] = "Insertion"
 
-            matrix[row][column] = max(left_cell, up_cell, diag_cell)
-            if matrix[row][column] == diag_cell:
-                isDiag = True
+            # Recurrence for Deletion Code Below
+            extension_cum = Deletion_matrix[row-1][col] - 0.1
+            open_cum = Match_matrix[row-1][col] - 4
+            Deletion_matrix[row][col] = max(extension_cum, open_cum)
+            if Deletion_matrix[row][col] == open_cum:
+                T_deletion_matrix[row][col] = "Match"
             else:
-                isDiag = False
+                T_deletion_matrix[row][col] = "Deletion"
 
-            if max(left_cell, up_cell, diag_cell) == diag_cell:
-                trace_matrix[row][column] = "Diagonal"
-            if max(left_cell, up_cell, diag_cell) == left_cell:
-                trace_matrix[row][column] = "Left"
-            if max(left_cell, up_cell, diag_cell) == up_cell:
-                trace_matrix[row][column] = "Up"
-    
-    
+            #Recurrence for Insertion Code Below
+            extension_cum = Insertion_matrix[row][col - 1] - 0.1
+            open_cum = Match_matrix[row][col - 1] - 4
+            Insertion_matrix[row][col] = max(extension_cum,open_cum)
+            if Insertion_matrix[row][col] == open_cum:
+                T_insertion_matrix[row][col] = "Match"
+            else:
+                T_insertion_matrix[row][col] = "Insertion"
 
+    Match_score = Match_matrix[n][m]
+    Insertion_score = Insertion_matrix[n][m]
+    Deletion_score = Deletion_matrix[n][m]
+    best_matrix = 'Match'
+    best_score = Match_score
+    if Insertion_score > best_score:
+        best_matrix = 'Insertion'
+        best_score = Insertion_score
+    if Deletion_score > best_score:
+        best_matrix = 'Deletion'
+        best_score = Deletion_score
+
+#m = len(x) = j = seqX
+#n = len(y) = i = seqY
+
+    seqX_length = m
+    seqY_length = n
+    matrix_temp = best_matrix
     opt_X = []
     opt_Y = []
-    seqX_length = len(x)
-    seqY_length = len(y)
-
-    alignment_score = float(matrix[len(y)][len(x)])
     while seqX_length > 0 or seqY_length > 0:
-        if trace_matrix[seqY_length][seqX_length] == 'Diagonal':
+        if matrix_temp == "Match":
+            matrix_temp = T_match_matrix[seqY_length][seqX_length]
             opt_X.append(x_list[seqX_length - 1])
             opt_Y.append(y_list[seqY_length - 1])
             seqX_length -= 1
             seqY_length -= 1
-
-        elif trace_matrix[seqY_length][seqX_length] == 'Left':
+        elif matrix_temp == 'Insertion':
+            matrix_temp = T_insertion_matrix[seqY_length][seqX_length]
             opt_X.append(x_list[seqX_length - 1])
             opt_Y.append('-')
             seqX_length -= 1
-
-        elif trace_matrix[seqY_length][seqX_length] == 'Up':
+        elif matrix_temp == 'Deletion':
+            matrix_temp = T_deletion_matrix[seqY_length][seqX_length]
             opt_X.append('-')
             opt_Y.append(y_list[seqY_length - 1])
             seqY_length -= 1
@@ -340,7 +384,8 @@ def affine_gap(x, y):
     print("Percent identity:", str((num / (len(x_list) + len(y_list)) * 100)) + '%')
     print("Indels: number =", str(indelquant) + ", mean length =", str(mean_length))
     print("Alignment length:", len(final_x))
-    print("Score=" + str(alignment_score))
+    print("Score=" + str(best_score))
+    print("\n")
 
     for x in range(0, len(final_x), 60):
         if len(final_x) > x + 60:
@@ -351,6 +396,7 @@ def affine_gap(x, y):
             print(final_x[x:])
             print(dashstar[x:])
             print(final_y[x:])
+
 
 if __name__ == '__main__':
 
