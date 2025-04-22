@@ -5,7 +5,7 @@ Created on 1/29/25
 
 
 #### linear pen == 1
-
+low = -1.7976931348623157e+308
 def parser(f_name):
 	sequence_Dict = {}
 	with open(f_name, 'r') as file:
